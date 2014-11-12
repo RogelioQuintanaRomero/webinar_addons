@@ -126,9 +126,10 @@
 
 .form-style .mensaje{
 	float: right;
-	width: 250px;
-	font: 12px Arial, Helvetica, sans-serif;
-	color: #4D4D4D;
+	display: none;
+	width: 350px;
+	font: 15px Arial, Helvetica, sans-serif;
+	/* color: #00FF00; */
 	margin-top: 10px;
 	text-align: right;
 }

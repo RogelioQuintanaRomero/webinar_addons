@@ -29,7 +29,7 @@
     global $arrConf;
     global $arrConfModule;
 
-    $arrConfModule['module_name']       = 'producto_ingreso';
+    $arrConfModule['module_name']       = 'producto_ingreso_2';
     $arrConfModule['templates_dir']     = 'themes';
     $arrConfModule['dsn_conn_database'] = "mysql://webinar:webinar@localhost/webinar";
 ?>

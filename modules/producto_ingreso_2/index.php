@@ -29,12 +29,13 @@
 //include elastix framework
 include_once "libs/paloSantoGrid.class.php";
 include_once "libs/paloSantoForm.class.php";
+include_once "libs/JSON.php";
 
 function _moduleContent(&$smarty, $module_name)
 {
     //include module files
     include_once "modules/$module_name/configs/default.conf.php";
-    include_once "modules/$module_name/libs/ProductoIngreso.class.php";
+    include_once "modules/$module_name/libs/Producto.class.php";
 
     //include file language agree to elastix configuration
     //if file language not exists, then include language by default (en)
@@ -59,15 +60,19 @@ function _moduleContent(&$smarty, $module_name)
     //conexion resource
     $pDB = new paloDB($arrConf['dsn_conn_database']);
 
-    _pre($_POST);
-
     //actions
-    $action = getAction();
-    $content = "";
+    $action  = getAction();
+    $content = "";    
 
-    echo "action: $action";
     switch($action){
-        case "save_new":
+        case 'consultar_disponibilidad':
+            // Variables que vienen por POST
+            $campo = getParameter("campo");
+            $valor = getParameter("valor");            
+            return consultar_disponibilidad($pDB, $campo, $valor);
+            break;
+
+        case 'save_new':
             $content = saveNewproducto_ingreso($smarty, $module_name, $local_templates_dir, $pDB, $arrConf);
             break;
         default: // view_form
@@ -77,9 +82,19 @@ function _moduleContent(&$smarty, $module_name)
     return $content;
 }
 
+function consultar_disponibilidad($pDB, $campo, $valor)
+{
+    $json = new Services_JSON();
+    $oProducto = new Producto($pDB);
+    $respuesta = $oProducto->consultar_disponibilidad($campo, $valor);    
+    
+    header('Content-Type: application/json');
+    return $json->encode($respuesta);        
+}
+
 function viewFormproducto_ingreso($smarty, $module_name, $local_templates_dir, &$pDB, $arrConf)
 {
-    $oProducto = new ProductoIngreso($pDB);
+    $oProducto = new Producto($pDB);
     $arrFormproducto_ingreso = createFieldForm();
     $oForm = new paloForm($smarty,$arrFormproducto_ingreso);
 
@@ -119,7 +134,7 @@ function viewFormproducto_ingreso($smarty, $module_name, $local_templates_dir, &
 
 function saveNewproducto_ingreso($smarty, $module_name, $local_templates_dir, &$pDB, $arrConf)
 {
-    $oProducto = new ProductoIngreso($pDB);
+    $oProducto = new Producto($pDB);
     $arrFormproducto_ingreso = createFieldForm();
     $oForm = new paloForm($smarty,$arrFormproducto_ingreso);
 
@@ -181,19 +196,21 @@ function createFieldForm()
 
 function getAction()
 {
-    if(getParameter("save_new")) //Get parameter by POST (submit)
-        return "save_new";
-    else if(getParameter("save_edit"))
-        return "save_edit";
-    else if(getParameter("delete")) 
-        return "delete";
-    else if(getParameter("new_open")) 
-        return "view_form";
-    else if(getParameter("action")=="view")      //Get parameter by GET (command pattern, links)
-        return "view_form";
-    else if(getParameter("action")=="view_edit")
-        return "view_form";
-    else if(isset($_POST['save_new']))
+    if(getParameter('save_new')) //Get parameter by POST (submit)
+        return 'save_new';
+    elseif(getParameter('save_edit'))
+        return 'save_edit';
+    elseif(getParameter('delete')) 
+        return 'delete';
+    elseif(getParameter('new_open')) 
+        return 'view_form';
+    elseif(getParameter('action') == 'view')      //Get parameter by GET (command pattern, links)
+        return 'view_form';
+    elseif(getParameter('action') == 'view_edit')
+        return 'view_form';
+    elseif(getParameter('action') == 'consultar_disponibilidad')
+        return 'consultar_disponibilidad';
+    elseif(isset($_POST['save_new']))
         return "save_new";
     else
         return "report"; //cancel
